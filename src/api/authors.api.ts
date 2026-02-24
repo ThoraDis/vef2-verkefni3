@@ -1,58 +1,146 @@
 import { Hono } from "hono";
+import * as z from 'zod'
 import type { Auth } from "hono/utils/basic-auth";
 import { prisma } from '../prisma.js'
+import {zValidator} from '@hono/zod-validator'
+
 
 export const app = new Hono();
 
-type Author = {
-    id:string,
-    name:string
-}
-const tempAuthors: Array<Author> = [
-    {id: '1' , name: 'temp author 1'},
-    {id: '2' ,name: 'temp author 2'},
-    {id: '3' ,name: 'temp author 3'},
-    {id: '4' ,name: 'temp author 4'},
-]
+const pagingSchema=z.object({
+    limit:z.coerce.number().min(1).max(100).optional().default(10),
+    offset: z.coerce.number().min(0).max(100).optional().default(0)
+})
 
-app.get('/', async(c)=>{
+const authorSchema=z.object({
+    limit:z.coerce.number().min(1).max(100).optional().default(10),
+    offset: z.coerce.number().min(0).max(100).optional().default(0),
+    email: z.coerce.string().min(1).max(100),
+    name: z.coerce.string().min(1).max(255)
+})
 
-    const authors = await prisma.author.findMany();
-    return c.json(authors)
+app.get('/',zValidator('query',pagingSchema) ,async(c)=>{
+    const limit=c.req.valid('query').limit
+    const offset =c.req.valid('query').offset
+
+    const authors = await prisma.author.findMany({skip:offset, take:limit});
+    if (!authors) {
+        return c.json({ error: 'not found' }, 404)
+    }
+    const authorsCount = await prisma.author.count()
+
+    const response = {
+        data: authors,
+        paging: {
+            limit,
+            offset,
+            count: authorsCount
+        }
+    }
+
+    return c.json(response)
 
 })
 
-app.get('/:id',async (c)=>{
+app.get('/:id',zValidator('query',pagingSchema) ,async(c)=>{
+    const limit=c.req.valid('query').limit
+    const offset =c.req.valid('query').offset
+
     const id = c.req.param('id')
     const author = await prisma.author.findUnique({
       where: { id: Number(id) },
     });
 
+    const authorCount = await prisma.author.count()
+
     if(!author){
         return c.json({error: 'Not found'}, 404)
 
     }
-    return c.json(author)
+        const response = {
+        data: author,
+        paging: {
+            limit,
+            offset,
+            count: authorCount
+        }
+    }
+
+    return c.json(response)
 
 })
 
+app.post('/',zValidator('query',authorSchema) ,async(c)=>{
+    const limit=c.req.valid('query').limit
+    const offset =c.req.valid('query').offset
+    const email=c.req.valid('query').email
+    const name =c.req.valid('query').name
 
-app.delete('/:id',(c)=>{
+    const newAuthor = await prisma.author.create({
+        data:{
+            email:email,
+            name:name
+        }
+    })
 
+    const response = {
+        data: newAuthor,
+        paging: {
+            limit,
+            offset,
+            count: 1
+        }
+    }
+
+    return c.json(response)
+})
+
+app.put('/:id',zValidator('query',authorSchema) ,async(c)=>{
+    const limit=c.req.valid('query').limit
+    const offset =c.req.valid('query').offset
+    const id = c.req.param('id')
+    const email=c.req.valid('query').email
+    const name =c.req.valid('query').name
+
+    const updatedAuthor=await prisma.author.update({
+        where: {id:Number(id),},
+        data:{email:email, name:name},});
+
+
+    const response = {
+        data: updatedAuthor,
+        paging: {
+            limit,
+            offset,
+            count: 1
+        }
+    }
+
+    return c.json(response)
+})
+
+
+
+app.delete('/:id',zValidator('query',pagingSchema) ,async(c)=>{
+    const limit=c.req.valid('query').limit
+    const offset =c.req.valid('query').offset
     const id = c.req.param('id')
 
-    const author = tempAuthors.find(i=>i.id===id)
+    const deletedAuthor=await prisma.author.delete({
+    where: {
+        id:Number(id),},});
 
-    if(!author){
-        return c.json({error: 'Not found'}, 404)
-
+    const response = {
+        data: deletedAuthor,
+        paging: {
+            limit,
+            offset,
+            count: 1
+        }
     }
-    return c.json(null,200)
+
+    return c.json(response)
 
 })
 
 
-app.post('/',(c)=>{
-
-
-})
