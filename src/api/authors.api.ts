@@ -22,10 +22,11 @@ app.get('/', async(c)=>{
 
 })
 
-app.get('/:id',(c)=>{
+app.get('/:id',async (c)=>{
     const id = c.req.param('id')
-
-    const author = tempAuthors.find(i=>i.id===id)
+    const author = await prisma.author.findUnique({
+      where: { id: Number(id) },
+    });
 
     if(!author){
         return c.json({error: 'Not found'}, 404)
