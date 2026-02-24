@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import * as z from 'zod'
-import type { Auth } from "hono/utils/basic-auth";
 import { prisma } from '../prisma.js'
 import {zValidator} from '@hono/zod-validator'
 
@@ -12,6 +11,7 @@ const pagingSchema=z.object({
     offset: z.coerce.number().min(0).max(100).optional().default(0)
 })
 
+//TODO gera optional
 const authorSchema=z.object({
     limit:z.coerce.number().min(1).max(100).optional().default(10),
     offset: z.coerce.number().min(0).max(100).optional().default(0),
