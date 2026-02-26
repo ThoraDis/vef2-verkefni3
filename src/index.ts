@@ -32,17 +32,19 @@ app.get('/', (c) => {
         '/news': [
       {
         method: 'get',
-        description: 'get all authors, paginated'
+        description: 'get all news, paginated'
       },
       {
         method: 'post',
-        description: 'create a new author'
+        description: 'create a new news'
       },
       {
         method: 'put',
+        description: 'updates existing news'
       },
       {
         method: 'delete',
+        description: 'delete existing news'
       },
     ]
   })
