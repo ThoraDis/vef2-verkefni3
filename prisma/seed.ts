@@ -72,7 +72,7 @@ async function main() {
     //Ellefu fréttir
     await prisma.news.create({
         data: {
-            slug:"fretteitt",
+            slug:"frett-eitt",
             title:"Frétt eitt",
             excerpt:"Þetta er stutt frétt",
             content: "Þetta er löng frétt",
@@ -83,7 +83,7 @@ async function main() {
 
         await prisma.news.create({
         data: {
-            slug:"fretttvo",
+            slug:"frett-tvo",
             title:"Frétt tvö",
             excerpt:"Þetta er stutt frétt",
             content: "Þetta er löng frétt",
@@ -94,7 +94,7 @@ async function main() {
 
         await prisma.news.create({
         data: {
-            slug:"frettthrir",
+            slug:"frett-thrir",
             title:"Frettt þrjú",
             excerpt:"Þetta er stutt frétt",
             content: "Þetta er löng frétt",
@@ -105,7 +105,7 @@ async function main() {
 
         await prisma.news.create({
         data: {
-            slug:"frettfjorir",
+            slug:"frett-fjorir",
             title:"Frétt fjögur",
             excerpt:"Þetta er stutt frétt",
             content: "Þetta er löng frétt",
@@ -116,7 +116,7 @@ async function main() {
 
         await prisma.news.create({
         data: {
-            slug:"frettfimm",
+            slug:"frett-fimm",
             title:"Frétt fimm",
             excerpt:"Þetta er stutt frétt",
             content: "Þetta er löng frétt",
@@ -127,7 +127,7 @@ async function main() {
 
         await prisma.news.create({
         data: {
-            slug:"frettsex",
+            slug:"frett-sex",
             title:"Frétt sex",
             excerpt:"Þetta er stutt frétt",
             content: "Þetta er löng frétt",
@@ -138,7 +138,7 @@ async function main() {
 
         await prisma.news.create({
         data: {
-            slug:"frettsjo",
+            slug:"frett-sjo",
             title:"Frétt sjö",
             excerpt:"Þetta er stutt frétt",
             content: "Þetta er löng frétt",
@@ -149,7 +149,7 @@ async function main() {
 
         await prisma.news.create({
         data: {
-            slug:"frettatta",
+            slug:"frett-atta",
             title:"Frétt átta",
             excerpt:"Þetta er stutt frétt",
             content: "Þetta er löng frétt",
@@ -160,7 +160,7 @@ async function main() {
 
         await prisma.news.create({
         data: {
-            slug:"frettniu",
+            slug:"frett-niu",
             title:"Frétt níu",
             excerpt:"Þetta er stutt frétt",
             content: "Þetta er löng frétt",
@@ -171,7 +171,7 @@ async function main() {
 
         await prisma.news.create({
         data: {
-            slug:"frettttiu",
+            slug:"frettt-tiu",
             title:"Frétt tíu",
             excerpt:"Þetta er stutt frétt",
             content: "Þetta er löng frétt",
@@ -182,7 +182,7 @@ async function main() {
 
         await prisma.news.create({
         data: {
-            slug:"frettellefu",
+            slug:"frett-ellefu",
             title:"Frétt ellefu",
             excerpt:"Þetta er stutt frétt",
             content: "Þetta er löng frétt",

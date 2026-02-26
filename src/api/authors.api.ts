@@ -1,146 +1,156 @@
 import { Hono } from "hono";
-import * as z from 'zod'
 import { prisma } from '../prisma.js'
 import {zValidator} from '@hono/zod-validator'
+import { Prisma } from "../generated/prisma/client.js";
+import {authorSchema,pagingSchema} from "../schema.zod.js"
 
 
 export const app = new Hono();
-
-const pagingSchema=z.object({
-    limit:z.coerce.number().min(1).max(100).optional().default(10),
-    offset: z.coerce.number().min(0).max(100).optional().default(0)
-})
-
-//TODO gera optional
-const authorSchema=z.object({
-    limit:z.coerce.number().min(1).max(100).optional().default(10),
-    offset: z.coerce.number().min(0).max(100).optional().default(0),
-    email: z.coerce.string().min(1).max(100),
-    name: z.coerce.string().min(1).max(255)
-})
-
 app.get('/',zValidator('query',pagingSchema) ,async(c)=>{
-    const limit=c.req.valid('query').limit
-    const offset =c.req.valid('query').offset
+    try{
+        const limit=c.req.valid('query').limit
+        const offset =c.req.valid('query').offset
 
-    const authors = await prisma.author.findMany({skip:offset, take:limit});
-    if (!authors) {
-        return c.json({ error: 'not found' }, 404)
-    }
-    const authorsCount = await prisma.author.count()
+        const authors = await prisma.author.findMany({skip:offset, take:limit});
 
-    const response = {
-        data: authors,
-        paging: {
-            limit,
-            offset,
-            count: authorsCount
+        const authorsCount = await prisma.author.count()
+
+        const response = {
+            data: authors,
+            paging: {
+                limit,
+                offset,
+                count: authorsCount
+            }
         }
-    }
 
-    return c.json(response)
+        return c.json(response,200)
+    }catch(error){
+        console.error(error)
+        return c.json({ error: 'Internal error' }, 500);
+    }
 
 })
 
 app.get('/:id',zValidator('query',pagingSchema) ,async(c)=>{
-    const limit=c.req.valid('query').limit
-    const offset =c.req.valid('query').offset
 
-    const id = c.req.param('id')
-    const author = await prisma.author.findUnique({
-      where: { id: Number(id) },
-    });
+    try{
+        const id = c.req.param('id')
 
-    const authorCount = await prisma.author.count()
+        const author = await prisma.author.findUnique({
+            where: { id: Number(id) },
+        });
 
-    if(!author){
-        return c.json({error: 'Not found'}, 404)
+        if (!author) {
+            return c.json({ error: 'no such author' }, 404);
+        }
 
-    }
+
         const response = {
-        data: author,
-        paging: {
-            limit,
-            offset,
-            count: authorCount
+            data: author
         }
-    }
 
-    return c.json(response)
+        return c.json(response,200)
+
+    }catch(error){
+        console.error(error)
+        return c.json({ error: 'Internal error' }, 500);
+    }
 
 })
 
-app.post('/',zValidator('query',authorSchema) ,async(c)=>{
-    const limit=c.req.valid('query').limit
-    const offset =c.req.valid('query').offset
-    const email=c.req.valid('query').email
-    const name =c.req.valid('query').name
+app.post('/',zValidator('query',authorSchema,(result, c) => {
+    if (!result.success) {
+      return c.json("Bad request",400)}}), async(c)=>{
 
-    const newAuthor = await prisma.author.create({
-        data:{
-            email:email,
-            name:name
-        }
-    })
+    try{
+        const email=c.req.valid('query').email
+        const name =c.req.valid('query').name
 
-    const response = {
-        data: newAuthor,
-        paging: {
-            limit,
-            offset,
-            count: 1
+        const newAuthor = await prisma.author.create({
+            data:{
+                email:email,
+                name:name
+            }
+        })
+
+        const response = {
+            data: newAuthor,
+
         }
+
+        return c.json(response,201)
+
+    }catch(error){
+        console.error(error)
+        return c.json({ error: 'Internal error' }, 500);
     }
-
-    return c.json(response)
-})
-
-app.put('/:id',zValidator('query',authorSchema) ,async(c)=>{
-    const limit=c.req.valid('query').limit
-    const offset =c.req.valid('query').offset
-    const id = c.req.param('id')
-    const email=c.req.valid('query').email
-    const name =c.req.valid('query').name
-
-    const updatedAuthor=await prisma.author.update({
-        where: {id:Number(id),},
-        data:{email:email, name:name},});
-
-
-    const response = {
-        data: updatedAuthor,
-        paging: {
-            limit,
-            offset,
-            count: 1
-        }
-    }
-
-    return c.json(response)
 })
 
 
+app.put('/:id',zValidator('query',authorSchema,(result, c) => {
+    if (!result.success) {
+      return c.json("Bad request",400)
+    }
+  }), async(c)=>{
+
+    try{
+        const id = c.req.param('id')
+        const email=c.req.valid('query').email
+        const name =c.req.valid('query').name
+
+        try{
+            const updatedAuthor=await prisma.author.update({
+                where: {id:Number(id),},
+                data:{email:email, name:name},});
+
+
+            const response = {
+                data: updatedAuthor
+            }
+
+            return c.json(response,200)
+        }catch(e){
+            if (e instanceof Prisma.PrismaClientKnownRequestError) {
+                if (e.code === "P2002") {
+                    return c.json({ error: 'No author found' }, 404);
+                }
+            } throw e;
+        }
+    }catch(error){
+        console.error(error)
+        return c.json({ error: 'Internal error' }, 500);
+    }
+})
 
 app.delete('/:id',zValidator('query',pagingSchema) ,async(c)=>{
-    const limit=c.req.valid('query').limit
-    const offset =c.req.valid('query').offset
-    const id = c.req.param('id')
+    try{
+        const id = c.req.param('id')
 
-    const deletedAuthor=await prisma.author.delete({
-    where: {
-        id:Number(id),},});
+        try{
+            await prisma.author.delete({
+            where: {
+                id:Number(id),},});
 
-    const response = {
-        data: deletedAuthor,
-        paging: {
-            limit,
-            offset,
-            count: 1
+            return c.json(204)
+            
+        }catch(e){
+            if (e instanceof Prisma.PrismaClientKnownRequestError) {
+                if (e.code === "P2002") {
+                    return c.json({ error: 'No author found' }, 404);
+                }
+            } throw e;
         }
+        
+
+    
+    }catch(error){
+        console.error(error)
+        return c.json({ error: 'Internal error' }, 500);
     }
 
-    return c.json(response)
-
 })
+
+
 
 
