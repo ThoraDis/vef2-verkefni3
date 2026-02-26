@@ -70,7 +70,7 @@ app.post('/',zValidator('query',authorSchema,(result, c) => {
         const newAuthor = await prisma.author.create({
             data:{
                 email:email,
-                name:name
+                name:name,
             }
         })
 

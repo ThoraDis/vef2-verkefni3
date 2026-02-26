@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import slugify from 'typescript-slugify';
+import { slugify } from "../slugify.js";
 import { prisma } from '../prisma.js'
 import {zValidator} from '@hono/zod-validator'
 import { Prisma } from "../generated/prisma/client.js";
@@ -69,7 +69,6 @@ app.post('/',zValidator('query',newsSchema,(result, c) => {
 
         const newNews = await prisma.news.create({
             data:{
-                //TODO slugify
                 slug:slugify(title),
                 title:title,
                 excerpt:excerpt,
@@ -131,7 +130,7 @@ app.put('/:slug',zValidator('query',newsSchema,(result, c) => { if (!result.succ
     }
 })
 
-app.delete('/:id',zValidator('query',pagingSchema) ,async(c)=>{
+app.delete('/:slug',zValidator('query',pagingSchema) ,async(c)=>{
 
     try{
         const slug = c.req.param('slug')
