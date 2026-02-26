@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { prisma } from '../prisma.js'
 import {zValidator} from '@hono/zod-validator'
-import { Prisma } from "../generated/prisma/client.js";
 import {authorSchema,pagingSchema} from "../schema.zod.js"
 import xss from 'xss';
 
@@ -105,7 +104,6 @@ app.put('/:id',zValidator('query',authorSchema,(result, c) => {
         const email=xss(emailQuery)
         const name=xss(nameQuery)
 
-        try{
             const updatedAuthor=await prisma.author.update({
                 where: {id:Number(id),},
                 data:{email:email, name:name},});
@@ -116,13 +114,7 @@ app.put('/:id',zValidator('query',authorSchema,(result, c) => {
             }
 
             return c.json(response,200)
-        }catch(e){
-            if (e instanceof Prisma.PrismaClientKnownRequestError) {
-                if (e.code === "P2025") {
-                    return c.json({ error: 'No author found' }, 404);
-                }
-            } throw e;
-        }
+   
     }catch(error){
         console.error(error)
         return c.json({ error: 'Internal error' }, 500);
@@ -133,21 +125,11 @@ app.delete('/:id',zValidator('query',pagingSchema) ,async(c)=>{
     try{
         const id = c.req.param('id')
 
-        try{
             await prisma.author.delete({
             where: {
                 id:Number(id),},});
 
             return c.json(204)
-            
-        }catch(e){
-            if (e instanceof Prisma.PrismaClientKnownRequestError) {
-                if (e.code === "P2025") {
-                    return c.json({ error: 'No author found' }, 404);
-                }
-            } throw e;
-        }
-        
 
     
     }catch(error){

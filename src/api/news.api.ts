@@ -2,7 +2,6 @@ import { Hono } from "hono";
 import { slugify} from "../slugify.js";
 import { prisma } from '../prisma.js'
 import {zValidator} from '@hono/zod-validator'
-import { Prisma } from "../generated/prisma/client.js";
 import {newsSchema,pagingSchema} from "../schema.zod.js"
 import xss from 'xss';
 
@@ -118,31 +117,24 @@ app.put('/:slug',zValidator('query',newsSchema,(result, c) => { if (!result.succ
         const content =xss(contentQuery)
         const published = c.req.valid('query').published
         const authorName=xss(authorNameQuery)
-        try{
-            const author = await prisma.author.findFirst({
-                where: { name: authorName },});
 
-            const newNews = await prisma.news.update({
-                where: {slug:slug,},
-                data:{
-                    title:title,
-                    excerpt:excerpt,
-                    content:content,
-                    published:published,
-                    authorId:Number(author?.id)
-                    }})
+        const author = await prisma.author.findFirst({
+            where: { name: authorName },});
 
-            const response = {data: newNews}
+        const newNews = await prisma.news.update({
+            where: {slug:slug,},
+            data:{
+                title:title,
+                excerpt:excerpt,
+                content:content,
+                published:published,
+                authorId:Number(author?.id)
+                }})
 
-            return c.json(response)
-        }
-        catch(e){
-            if (e instanceof Prisma.PrismaClientKnownRequestError) {
-                if (e.code === "P2025") {
-                    return c.json({ error: 'No author found' }, 404);
-                }
-            } throw e;
-        }
+        const response = {data: newNews}
+
+        return c.json(response)
+
     }
     catch(error){
         console.error(error)
@@ -155,20 +147,12 @@ app.delete('/:slug',zValidator('query',pagingSchema) ,async(c)=>{
     try{
         const slug = c.req.param('slug')
     
-        try{
-            await prisma.news.delete({
+        await prisma.news.delete({
             where: { slug:slug },
             });    
-            return c.json(204)
+        return c.json(204)
                 
-            }
-        catch(e){
-                if (e instanceof Prisma.PrismaClientKnownRequestError) {
-                    if (e.code === "P2025") {
-                        return c.json({ error: 'No author found' }, 404);
-                    }
-                } throw e;
-        }
+
             
         }
         catch(error){
