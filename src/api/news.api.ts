@@ -4,6 +4,7 @@ import { prisma } from '../prisma.js'
 import {zValidator} from '@hono/zod-validator'
 import { Prisma } from "../generated/prisma/client.js";
 import {newsSchema,pagingSchema} from "../schema.zod.js"
+import xss from 'xss';
 
 export const app = new Hono();
 
@@ -58,11 +59,19 @@ app.post('/',zValidator('query',newsSchema,(result, c) => {
     if (!result.success) {
         return c.json("Bad request",400)}}), async(c)=>{    
     try{
-        const title =c.req.valid('query').title
-        const excerpt=c.req.valid('query').excerpt
-        const content=c.req.valid('query').content
-        const published=c.req.valid('query').published
-        const authorName=c.req.valid('query').author
+        const titleQuery =c.req.valid('query').title
+        const excerptQuery=c.req.valid('query').excerpt
+        const contentQuery=c.req.valid('query').content
+        const authorNameQuery=c.req.valid('query').author
+
+        const title = xss(titleQuery)
+        const excerpt=xss(excerptQuery)
+        const content =xss(contentQuery)
+        const published = c.req.valid('query').published
+        const authorName=xss(authorNameQuery)
+
+
+
 
         const author = await prisma.author.findFirst({
             where: { name: authorName },});
@@ -99,11 +108,16 @@ app.put('/:slug',zValidator('query',newsSchema,(result, c) => { if (!result.succ
       return c.json("Bad request",400)} }), async(c)=>{
     try{
         const slug = c.req.param('slug')
-        const title =c.req.valid('query').title
-        const excerpt=c.req.valid('query').excerpt
-        const content=c.req.valid('query').content
-        const published=c.req.valid('query').published
-        const authorName=c.req.valid('query').author
+        const titleQuery =c.req.valid('query').title
+        const excerptQuery=c.req.valid('query').excerpt
+        const contentQuery=c.req.valid('query').content
+        const authorNameQuery=c.req.valid('query').author
+
+        const title = xss(titleQuery)
+        const excerpt=xss(excerptQuery)
+        const content =xss(contentQuery)
+        const published = c.req.valid('query').published
+        const authorName=xss(authorNameQuery)
         try{
             const author = await prisma.author.findFirst({
                 where: { name: authorName },});
@@ -124,7 +138,7 @@ app.put('/:slug',zValidator('query',newsSchema,(result, c) => { if (!result.succ
         }
         catch(e){
             if (e instanceof Prisma.PrismaClientKnownRequestError) {
-                if (e.code === "P2002") {
+                if (e.code === "P2025") {
                     return c.json({ error: 'No author found' }, 404);
                 }
             } throw e;
@@ -150,7 +164,7 @@ app.delete('/:slug',zValidator('query',pagingSchema) ,async(c)=>{
             }
         catch(e){
                 if (e instanceof Prisma.PrismaClientKnownRequestError) {
-                    if (e.code === "P2002") {
+                    if (e.code === "P2025") {
                         return c.json({ error: 'No author found' }, 404);
                     }
                 } throw e;

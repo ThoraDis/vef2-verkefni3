@@ -3,6 +3,7 @@ import { prisma } from '../prisma.js'
 import {zValidator} from '@hono/zod-validator'
 import { Prisma } from "../generated/prisma/client.js";
 import {authorSchema,pagingSchema} from "../schema.zod.js"
+import xss from 'xss';
 
 
 export const app = new Hono();
@@ -64,8 +65,11 @@ app.post('/',zValidator('query',authorSchema,(result, c) => {
       return c.json("Bad request",400)}}), async(c)=>{
 
     try{
-        const email=c.req.valid('query').email
-        const name =c.req.valid('query').name
+        const emailQuery=c.req.valid('query').email
+        const nameQuery =c.req.valid('query').name
+        const email=xss(emailQuery)
+        const name=xss(nameQuery)
+
 
         const newAuthor = await prisma.author.create({
             data:{
@@ -96,8 +100,10 @@ app.put('/:id',zValidator('query',authorSchema,(result, c) => {
 
     try{
         const id = c.req.param('id')
-        const email=c.req.valid('query').email
-        const name =c.req.valid('query').name
+        const emailQuery=c.req.valid('query').email
+        const nameQuery =c.req.valid('query').name
+        const email=xss(emailQuery)
+        const name=xss(nameQuery)
 
         try{
             const updatedAuthor=await prisma.author.update({
@@ -112,7 +118,7 @@ app.put('/:id',zValidator('query',authorSchema,(result, c) => {
             return c.json(response,200)
         }catch(e){
             if (e instanceof Prisma.PrismaClientKnownRequestError) {
-                if (e.code === "P2002") {
+                if (e.code === "P2025") {
                     return c.json({ error: 'No author found' }, 404);
                 }
             } throw e;
@@ -136,7 +142,7 @@ app.delete('/:id',zValidator('query',pagingSchema) ,async(c)=>{
             
         }catch(e){
             if (e instanceof Prisma.PrismaClientKnownRequestError) {
-                if (e.code === "P2002") {
+                if (e.code === "P2025") {
                     return c.json({ error: 'No author found' }, 404);
                 }
             } throw e;

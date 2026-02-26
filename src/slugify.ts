@@ -18,7 +18,8 @@ export function slugify(text: string): string | null {
     try {
         SlugSchema.parse(slug);
         return slug;
-    } catch (error) {
+    } catch{
+    
         return null;
     }
 
@@ -35,7 +36,7 @@ export function validateSlug(slug: unknown){
   try {
     SlugSchema.parse(slug);
     return true;
-  } catch (error) {
+  } catch{
     return false;
   }
 }
