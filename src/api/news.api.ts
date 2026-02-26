@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { slugify } from "../slugify.js";
+import { slugify} from "../slugify.js";
 import { prisma } from '../prisma.js'
 import {zValidator} from '@hono/zod-validator'
 import { Prisma } from "../generated/prisma/client.js";
@@ -67,9 +67,15 @@ app.post('/',zValidator('query',newsSchema,(result, c) => {
         const author = await prisma.author.findFirst({
             where: { name: authorName },});
 
+        const slugs = slugify(title)
+
+        if(slugs===null){
+            return c.json("Slug is invalid, create a new title",400)
+        }
+
         const newNews = await prisma.news.create({
             data:{
-                slug:slugify(title),
+                slug:slugs,
                 title:title,
                 excerpt:excerpt,
                 content:content,

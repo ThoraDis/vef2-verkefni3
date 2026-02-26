@@ -1,9 +1,11 @@
+import { z } from 'zod';
+
 /**
  * Slugify a string.
  * @param text Text to slugify
  * @returns Slugified string or `null` if the text cannot be slugified
  */
-export function slugify(text: string){
+export function slugify(text: string): string | null {
   const slug = text
     .toString()
     .toLowerCase()
@@ -13,6 +15,27 @@ export function slugify(text: string){
     .replace(/^-+/, '') // Trim - from start of text
     .replace(/-+$/, ''); // Trim - from end of text
 
+    try {
+        SlugSchema.parse(slug);
+        return slug;
+    } catch (error) {
+        return null;
+    }
 
-  return slug;
+}
+
+export const SlugSchema = z.string().min(3).max(255);
+
+/**
+ * Validate a slug.
+ * Slug is a string
+ * @see https://www.learningtypescript.com/articles/branded-types
+ */
+export function validateSlug(slug: unknown){
+  try {
+    SlugSchema.parse(slug);
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
