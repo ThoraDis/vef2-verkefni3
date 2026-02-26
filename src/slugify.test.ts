@@ -7,11 +7,11 @@ void describe('slugs', () => {
     const slug = slugify("this slug")
     assert.strictEqual(slug, "this-slug");
   });
-
+  
   void it('empty slug', () => {
     const slug = slugify("")
     assert.strictEqual(slug, null);
-
+    
   });
 
   void it('slug at least 3 chars', () => {
